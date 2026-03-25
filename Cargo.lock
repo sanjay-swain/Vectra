@@ -233,14 +233,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "physc"
-version = "0.1.0"
-dependencies = [
- "glam 0.32.1",
- "nalgebra",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -308,6 +300,14 @@ name = "unicode-ident"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
+
+[[package]]
+name = "vectra"
+version = "0.1.0"
+dependencies = [
+ "glam 0.32.1",
+ "nalgebra",
+]
 
 [[package]]
 name = "wide"
