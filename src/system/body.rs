@@ -1,9 +1,6 @@
-use glam::DMat3;
-use glam::DQuat;
-use glam::DVec3;
+use glam::{DMat3, DQuat, DVec3};
 
-use crate::system::interactions::Force;
-use crate::system::interactions::Torque;
+use crate::system::interactions::{Force, Torque};
 
 pub struct State {
     pub position: DVec3,

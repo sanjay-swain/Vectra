@@ -1,7 +1,6 @@
 use glam::DMat3;
 
-use crate::system::body::Body;
-use crate::system::body::State;
+use crate::system::body::{Body, State};
 
 pub struct World {
     pub bodies: Vec<Body>,
