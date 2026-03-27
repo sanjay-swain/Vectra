@@ -1,13 +1,9 @@
-use glam::{DMat3, DQuat, DVec3};
+use glam::DMat3;
 
-use crate::system::interactions::{Force, Torque};
-
-pub struct State {
-    pub position: DVec3,
-    pub velocity: DVec3,
-    pub quaternion: DQuat,
-    pub angular_velocity: DVec3,
-}
+use crate::system::{
+    interactions::{Force, Torque},
+    state::State,
+};
 
 pub struct Body {
     pub id: u32,
