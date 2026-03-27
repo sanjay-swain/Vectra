@@ -2,7 +2,7 @@ use glam::DVec3;
 
 use crate::system::{
     body::Body,
-    interactions::{Force, Torque},
+    interactions::{Force, Frame, Torque},
 };
 
 pub fn compute_forces(body: &Body) -> Force {
@@ -17,9 +17,11 @@ pub fn compute_forces(body: &Body) -> Force {
             y: 0.0,
             z: 0.0,
         },
+        frame: Frame::Local,
     };
 
     for force in &body.forces {
+        //TODO: Check the forces are in local frame or global frame. If global convert them to local and then add
         resultant_force.force += force.force;
     }
 
@@ -40,6 +42,7 @@ pub fn compute_torqes(body: &Body) -> Torque {
     }
 
     for force in &body.forces {
+        // TODO: Same here just like above. It is important to check for that.
         resultant_torque.torque += force.position.cross(force.force);
     }
 
