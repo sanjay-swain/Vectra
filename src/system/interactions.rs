@@ -12,7 +12,8 @@ pub enum Frame {
 #[derive(Clone, Copy)]
 pub struct Force {
     pub force: DVec3,
-    /// The point where force is applied is ALWAYS with respect to local frame of reference
+    /// The point where force is applied.
+    /// This is ALWAYS with respect to local frame of reference regardless the frame assigned is Local or Global
     pub position: DVec3,
     /// This defines whether the force is being applied is oriented according to local frame of reference or global
     pub frame: Frame,

@@ -9,7 +9,9 @@ pub fn newton_euler(body: &Body) -> StateDerivative {
 
     let x_dot = StateDerivative {
         velocity: body.state.velocity,
-        acceleration: resultant_force.force / body.mass,
+        // The resultant force we get after computation is in local frame,
+        // we need to convert it into global frame of reference
+        acceleration: resultant_force.to_global(body.state.orientation) / body.mass,
         angular_velocity: body.state.angular_velocity,
         angular_acceleration: body.inertia.inverse()
             * (resultant_torque.torque
