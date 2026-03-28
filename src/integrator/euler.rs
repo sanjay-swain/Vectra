@@ -28,7 +28,7 @@ pub fn semi_implict_euler_step(world: &mut World, state_derivative: StateDerivat
 
         body.state.angular_velocity += state_derivative.angular_acceleration * world.step_size;
 
-        let angle = state_derivative.angular_velocity.length() * world.step_size;
+        let angle = body.state.angular_velocity.length() * world.step_size;
         if angle > 1e-6 {
             let axis = body.state.angular_velocity.normalize();
             let dq = DQuat::from_axis_angle(axis, angle);
