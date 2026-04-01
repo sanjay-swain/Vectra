@@ -28,6 +28,10 @@ impl World {
         self.next_id += 1;
     }
 
+    pub fn set_gravity(&mut self, g: DVec3) {
+        self.gravity = Force::new(g, DVec3::ZERO, Frame::Global);
+    }
+
     pub fn apply_gravity_force(&mut self) {
         if self.enable_gravity {
             for body in &mut self.bodies {
