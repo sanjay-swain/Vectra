@@ -15,7 +15,7 @@ fn main() {
 
     world.enable_gravity = false;
 
-    world.create_body(3.0, DMat3::from_diagonal(DVec3::ONE), State::ZERO);
+    world.create_body(3.0, DMat3::from_diagonal(DVec3::ONE), State::ZERO, false);
 
     let mut t: f64 = 0.0;
 

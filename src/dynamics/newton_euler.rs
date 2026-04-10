@@ -26,10 +26,7 @@ pub fn newton_euler(body: &mut Body) {
 mod tests {
     use glam::{DMat3, DVec3};
 
-    use crate::system::{
-        interactions::{Force, Frame, Torque},
-        state::State,
-    };
+    use crate::system::interactions::{Force, Frame, Torque};
 
     use super::*;
 
@@ -38,11 +35,7 @@ mod tests {
         let mut body: Body = Body {
             id: 0,
             mass: 5.0,
-            inertia: DMat3::IDENTITY,
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.apply_force(Force::new(
@@ -72,10 +65,7 @@ mod tests {
                 y: 20.0,
                 z: 30.0,
             }),
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.apply_torque(Torque::new(DVec3::new(0.0, 20.0, 0.0), Frame::Local));
@@ -101,10 +91,7 @@ mod tests {
                 y: 20.0,
                 z: 30.0,
             }),
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.state.angular_velocity = DVec3 {

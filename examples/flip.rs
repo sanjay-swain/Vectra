@@ -20,6 +20,7 @@ fn main() {
             orientation: DQuat::IDENTITY,
             angular_velocity: DVec3::new(0.0, 10.0, 0.01),
         },
+        false,
     );
 
     let mut t: f64 = 0.0;

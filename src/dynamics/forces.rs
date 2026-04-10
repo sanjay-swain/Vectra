@@ -28,25 +28,17 @@ pub fn compute_resultant(body: &Body) -> (Force, Torque) {
 mod tests {
     use std::f64::consts::PI;
 
-    use glam::{DMat3, DQuat};
+    use glam::DQuat;
 
-    use crate::system::{
-        interactions::Frame,
-        state::{State, StateDerivative},
-    };
+    use crate::system::interactions::Frame;
 
     use super::*;
 
     #[test]
     fn translation() {
         let mut body: Body = Body {
-            id: 0,
             mass: 2.0,
-            inertia: DMat3::IDENTITY,
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.apply_force(Force {
@@ -83,13 +75,8 @@ mod tests {
     #[test]
     fn pure_couple() {
         let mut body: Body = Body {
-            id: 0,
             mass: 2.0,
-            inertia: DMat3::IDENTITY,
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.apply_force(Force {
@@ -133,13 +120,8 @@ mod tests {
     #[test]
     fn force_with_torque() {
         let mut body: Body = Body {
-            id: 0,
             mass: 2.0,
-            inertia: DMat3::IDENTITY,
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.state.orientation = DQuat::from_axis_angle(DVec3::Z, PI / 2.0);
@@ -171,13 +153,8 @@ mod tests {
     #[test]
     fn symmetry() {
         let mut body: Body = Body {
-            id: 0,
             mass: 2.0,
-            inertia: DMat3::IDENTITY,
-            state: State::ZERO,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
+            ..Default::default()
         };
 
         body.state.orientation = DQuat::from_axis_angle(DVec3::Y, PI);
