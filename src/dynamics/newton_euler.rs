@@ -12,9 +12,9 @@ pub fn newton_euler(body: &mut Body) {
         velocity: body.state.velocity,
         // The resultant force we get after computation is in local frame,
         // we need to convert it into global frame of reference
-        acceleration: resultant_force.to_global(body.state.orientation) / body.mass,
+        acceleration: resultant_force.to_global(body.state.orientation) * body.mass_inv,
         angular_velocity: body.state.angular_velocity,
-        angular_acceleration: body.inertia.inverse()
+        angular_acceleration: body.inertia_inv
             * (resultant_torque.torque
                 - body
                     .state
