@@ -30,6 +30,15 @@ pub trait Joint {
         anchor_b: DVec3,
         jacobian: &mut Vec<JacobianRow>,
     );
+
+    fn calculate_velocity_bias(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+        velocity_bias: &mut Vec<f64>,
+    );
 }
 
 pub struct SphericalJoint {}
@@ -70,5 +79,36 @@ impl Joint for SphericalJoint {
             v_b: DVec3::new(0.0, 0.0, 1.0),
             w_b: DVec3::new(r_b.y, -r_b.x, 0.0),
         };
+    }
+
+    fn calculate_velocity_bias(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+        velocity_bias: &mut Vec<f64>,
+    ) {
+        let r_a = state_a.orientation.mul_vec3(anchor_a);
+        let r_b = state_b.orientation.mul_vec3(anchor_b);
+        let omega_a = state_a.angular_velocity;
+        let omega_b = state_b.angular_velocity;
+        velocity_bias[0] = (-omega_a.x * (omega_a.z * r_a.z + omega_a.y * r_a.y)
+            + omega_a.y * omega_a.y * r_a.x
+            + omega_a.z * omega_a.z * r_a.x)
+            - (-omega_b.x * (omega_b.z * r_b.z + omega_b.y * r_b.y)
+                + omega_b.y * omega_b.y * r_b.x
+                + omega_b.z * omega_b.z * r_b.x);
+
+        velocity_bias[1] = (omega_a.x * omega_a.x * r_a.y
+            - omega_a.y * (omega_a.z * r_a.z + omega_a.x * r_a.x)
+            + omega_a.z * omega_a.z * r_a.x)
+            - (omega_b.x * omega_b.x * r_b.y - omega_b.y * (omega_b.z * r_b.z + omega_b.x * r_b.x)
+                + omega_b.z * omega_b.z * r_b.x);
+
+        velocity_bias[2] = (omega_a.x * omega_a.x * r_a.z + omega_a.y * omega_a.y * r_a.z
+            - omega_a.z * (omega_a.y * r_a.y + omega_a.x * r_a.x))
+            - (omega_b.x * omega_b.x * r_b.z + omega_b.y * omega_b.y * r_b.z
+                - omega_b.z * (omega_b.y * r_b.y + omega_b.x * r_b.x));
     }
 }
