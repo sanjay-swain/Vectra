@@ -1,14 +1,15 @@
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::{
-    dynamics::newton_euler::newton_euler,
+    dynamics::{forces::ForceSolver, newton_euler::NewtonEuler},
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     system::{state::State, world::World},
 };
 
 fn main() {
     println!("Starting");
+    let force_solver = NewtonEuler {};
     let integration = SemiImplicitEuler {};
-    let mut world = World::new(integration, 1e-5);
+    let mut world = World::new(force_solver, integration, 1e-5);
 
     world.enable_gravity = false;
 
@@ -28,9 +29,7 @@ fn main() {
 
     while t < 10.0 {
         // Update the state_derivative of each body
-        for body in &mut world.bodies {
-            newton_euler(body);
-        }
+        world.force_solver.solve(&mut world.bodies);
 
         // increase the time
         world.integrator.step(&mut world.bodies, world.step_size);

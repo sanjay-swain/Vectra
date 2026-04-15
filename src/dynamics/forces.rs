@@ -1,6 +1,9 @@
 use glam::{DQuat, DVec3};
 
-use crate::system::interactions::{Force, Torque};
+use crate::system::{
+    body::Body,
+    interactions::{Force, Torque},
+};
 
 pub fn compute_resultant(
     forces: &Vec<Force>,
@@ -23,6 +26,10 @@ pub fn compute_resultant(
     }
 
     return (resultant_force, resultant_torque);
+}
+
+pub trait ForceSolver {
+    fn solve(&self, bodies: &mut Vec<Body>);
 }
 
 #[cfg(test)]
