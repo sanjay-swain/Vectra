@@ -1,11 +1,11 @@
 use glam::DQuat;
 
-use crate::integrator::integrator::Integrator;
+use crate::{integrator::integrator::Integrator, system::body::Body};
 
 pub struct ExplicitEuler {}
 
 impl Integrator for ExplicitEuler {
-    fn step(&self, bodies: &mut Vec<crate::system::body::Body>, step_size: f64) {
+    fn step(&self, bodies: &mut Vec<Body>, step_size: f64) {
         for body in bodies {
             body.state.position += body.state_derivative.velocity * step_size;
             body.state.velocity += body.state_derivative.acceleration * step_size;
@@ -28,7 +28,7 @@ impl Integrator for ExplicitEuler {
 pub struct SemiImplicitEuler {}
 
 impl Integrator for SemiImplicitEuler {
-    fn step(&self, bodies: &mut Vec<crate::system::body::Body>, step_size: f64) {
+    fn step(&self, bodies: &mut Vec<Body>, step_size: f64) {
         for body in bodies {
             body.state.velocity += body.state_derivative.acceleration * step_size;
             body.state.position += body.state.velocity * step_size;
