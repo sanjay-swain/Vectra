@@ -1,6 +1,8 @@
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::{
-    dynamics::{constraint_solver::HardConstraint, forces::ForceSolver, newton_euler::NewtonEuler},
+    dynamics::{
+        constraint_solver::AccelerationConstraint, forces::ForceSolver, newton_euler::NewtonEuler,
+    },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     system::{state::State, world::World},
 };
@@ -8,7 +10,7 @@ use kite_core::{
 fn main() {
     println!("Starting");
     let force_solver = NewtonEuler {};
-    let constraint_solver = HardConstraint {};
+    let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
     let mut world = World::new(force_solver, constraint_solver, integration, 1e-5);
 
