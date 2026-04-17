@@ -4,7 +4,10 @@ use crate::{
     dynamics::{forces::compute_resultant, gauss_seidel::gauss_sediel},
     system::{
         body::Body,
-        constraints::{constraint::Constraint, joints::JacobianRow},
+        constraints::{
+            constraint::{Constraint, ConstraintForce},
+            joints::JacobianRow,
+        },
         interactions::{Force, Torque},
     },
 };
@@ -50,7 +53,26 @@ impl ConstraintSolver for AccelerationConstraint {
             body_b_orient,
         );
 
+        constraint.joint.calculate_jacobian(
+            &bodies[constraint.body_a_index].state,
+            &bodies[constraint.body_b_index].state,
+            constraint.body_a_anchor,
+            constraint.body_b_anchor,
+            &mut constraint.jacobian,
+        );
+
+        constraint.joint.calculate_velocity_bias(
+            &bodies[constraint.body_a_index].state,
+            &bodies[constraint.body_b_index].state,
+            constraint.body_a_anchor,
+            constraint.body_b_anchor,
+            &mut constraint.velocity_bias,
+        );
+
         let mut j_m: Vec<JacobianRow> = vec![JacobianRow::ZERO; n];
+
+        // Set constraint force to zero
+        constraint.constraint_forces = ConstraintForce::ZERO;
 
         for i in 0..n {
             j_m[i] = JacobianRow {
@@ -65,14 +87,14 @@ impl ConstraintSolver for AccelerationConstraint {
             }
 
             // RHS side calculation now
-            rhs[i] = -1.0 * constraint.velocity_bias[i]
+            rhs[i] = (-1.0 * constraint.velocity_bias[i])
                 - (j_m[i].v_a.dot(f_a_ext.to_global(body_a_orient))
                     + j_m[i].w_a.dot(t_a_ext.to_global(body_a_orient))
                     + j_m[i].v_b.dot(f_b_ext.to_global(body_b_orient))
                     + j_m[i].w_b.dot(t_b_ext.to_global(body_b_orient)));
         }
 
-        gauss_sediel(&k_matrix, &rhs, &mut constraint.lagrange_multiplier, 10);
+        gauss_sediel(&k_matrix, &rhs, &mut constraint.lagrange_multiplier, 25);
 
         for i in 0..n {
             constraint.constraint_forces.f_a = constraint.constraint_forces.f_a
