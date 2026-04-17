@@ -52,9 +52,7 @@ impl ConstraintSolver for AccelerationConstraint {
 
         let mut j_m: Vec<JacobianRow> = vec![JacobianRow::ZERO; n];
 
-        let mut i: usize = 0;
-
-        while i < n {
+        for i in 0..n {
             j_m[i] = JacobianRow {
                 v_a: constraint.jacobian[i].v_a * m_a,
                 w_a: i_a * constraint.jacobian[i].w_a,
@@ -62,11 +60,8 @@ impl ConstraintSolver for AccelerationConstraint {
                 w_b: i_b * constraint.jacobian[i].w_b,
             };
 
-            let mut j = 0;
-
-            while j < n {
+            for j in 0..n {
                 k_matrix[i][j] = j_m[i].dot(&constraint.jacobian[j]);
-                j = j + 1;
             }
 
             // RHS side calculation now
@@ -75,15 +70,11 @@ impl ConstraintSolver for AccelerationConstraint {
                     + j_m[i].w_a.dot(t_a_ext.to_global(body_a_orient))
                     + j_m[i].v_b.dot(f_b_ext.to_global(body_b_orient))
                     + j_m[i].w_b.dot(t_b_ext.to_global(body_b_orient)));
-
-            i = i + 1;
         }
 
         gauss_sediel(&k_matrix, &rhs, &mut constraint.lagrange_multiplier, 10);
 
-        i = 0;
-
-        while i < n {
+        for i in 0..n {
             constraint.constraint_forces.f_a = constraint.constraint_forces.f_a
                 + constraint.jacobian[i].v_a * constraint.lagrange_multiplier[i];
 
@@ -95,8 +86,6 @@ impl ConstraintSolver for AccelerationConstraint {
 
             constraint.constraint_forces.t_b = constraint.constraint_forces.t_b
                 + constraint.jacobian[i].w_b * constraint.lagrange_multiplier[i];
-
-            i = i + 1;
         }
     }
 }
