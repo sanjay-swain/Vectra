@@ -2,8 +2,11 @@ pub fn gauss_sediel(a: &Vec<Vec<f64>>, b: &Vec<f64>, x: &mut [f64; 6], iteration
     let n = b.len();
 
     for _ in 0..iterations {
+        let mut completed: bool = true;
+
         for i in 0..n {
             let mut sum = 0.0;
+            let x_old = x[i];
 
             for j in 0..n {
                 if i != j {
@@ -11,6 +14,14 @@ pub fn gauss_sediel(a: &Vec<Vec<f64>>, b: &Vec<f64>, x: &mut [f64; 6], iteration
                 }
             }
             x[i] = (b[i] - sum) / a[i][i];
+
+            if ((x[i] - x_old).abs() / x[i]) * 100.0 > 1e-5 {
+                completed = false;
+            };
+        }
+
+        if completed {
+            break;
         }
     }
 }
@@ -28,15 +39,29 @@ mod tests {
         ];
 
         let b = vec![16.0, 15.0, 24.0];
-        println!("{}", b.len());
 
         let mut x = [0.0; 6];
 
         gauss_sediel(&a, &b, &mut x, 200);
 
-        assert!((x[0] - 2.0).abs() < 1e-6);
-        assert!((x[1] - 2.0).abs() < 1e-6);
-        assert!((x[2] - 3.0).abs() < 1e-6);
+        assert!(
+            (x[0] - 2.0).abs() < 1e-6,
+            "{} expected, found {}",
+            2.0,
+            x[0]
+        );
+        assert!(
+            (x[1] - 2.0).abs() < 1e-6,
+            "{} expected, found {}",
+            2.0,
+            x[1]
+        );
+        assert!(
+            (x[2] - 3.0).abs() < 1e-6,
+            "{} expected, found {}",
+            3.0,
+            x[2]
+        );
     }
 
     #[test]
