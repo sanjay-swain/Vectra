@@ -1,13 +1,8 @@
-use glam::DMat3;
-
 use crate::{
     dynamics::{forces::compute_resultant, gauss_seidel::gauss_sediel},
     system::{
         body::Body,
-        constraints::{
-            constraint::{Constraint, ConstraintForce},
-            joints::JacobianRow,
-        },
+        constraints::{constraint::Constraint, joints::Jacobian},
         interactions::{Force, Torque},
     },
 };
@@ -29,9 +24,14 @@ impl ConstraintSolver for AccelerationConstraint {
         let body_b_orient = bodies[constraint.body_b_index].state.orientation;
 
         let m_a = bodies[constraint.body_a_index].mass_inv;
-        let i_a = bodies[constraint.body_a_index].inertia_inv_world();
+        let i_a = bodies[constraint.body_a_index]
+            .inertia_inv_world()
+            .to_cols_array_2d();
+
         let m_b = bodies[constraint.body_b_index].mass_inv;
-        let i_b = bodies[constraint.body_b_index].inertia_inv_world();
+        let i_b = bodies[constraint.body_b_index]
+            .inertia_inv_world()
+            .to_cols_array_2d();
 
         let f_a_ext: Force;
         let f_b_ext: Force;
@@ -50,6 +50,21 @@ impl ConstraintSolver for AccelerationConstraint {
             body_b_orient,
         );
 
+        let f_ext: [f64; 12] = [
+            f_a_ext.force.x,
+            f_a_ext.force.y,
+            f_a_ext.force.z,
+            t_a_ext.torque.x,
+            t_a_ext.torque.y,
+            t_a_ext.torque.z,
+            f_b_ext.force.x,
+            f_b_ext.force.y,
+            f_b_ext.force.z,
+            t_b_ext.torque.x,
+            t_b_ext.torque.y,
+            t_b_ext.torque.z,
+        ];
+
         constraint.joint.calculate_jacobian(
             &bodies[constraint.body_a_index].state,
             &bodies[constraint.body_b_index].state,
@@ -66,45 +81,62 @@ impl ConstraintSolver for AccelerationConstraint {
             &mut constraint.velocity_bias,
         );
 
-        let mut j_m: Vec<JacobianRow> = vec![JacobianRow::ZERO; n];
+        let mut j_m = Jacobian::ZERO;
 
         // Set constraint force to zero
-        constraint.constraint_forces = ConstraintForce::ZERO;
+        constraint.constraint_forces = [0.0; 12];
 
         for i in 0..n {
-            j_m[i] = JacobianRow {
-                v_a: constraint.jacobian[i].v_a * m_a,
-                w_a: i_a * constraint.jacobian[i].w_a,
-                v_b: constraint.jacobian[i].v_b * m_b,
-                w_b: i_b * constraint.jacobian[i].w_b,
-            };
+            // j_m[i] = JacobianRow {
+            //     v_a: constraint.jacobian[i].v_a * m_a,
+            //     w_a: i_a * constraint.jacobian[i].w_a,
+            //     v_b: constraint.jacobian[i].v_b * m_b,
+            //     w_b: i_b * constraint.jacobian[i].w_b,
+            // };
+
+            j_m.j[i][i] = constraint.jacobian.j[i][i] * m_a;
+
+            j_m.j[i][3] = constraint.jacobian.j[i][3] * i_a[0][0]
+                + constraint.jacobian.j[i][4] * i_a[1][0]
+                + constraint.jacobian.j[i][5] * i_a[2][0];
+
+            j_m.j[i][4] = constraint.jacobian.j[i][3] * i_a[0][1]
+                + constraint.jacobian.j[i][4] * i_a[1][1]
+                + constraint.jacobian.j[i][5] * i_a[2][1];
+
+            j_m.j[i][5] = constraint.jacobian.j[i][3] * i_a[0][2]
+                + constraint.jacobian.j[i][4] * i_a[1][2]
+                + constraint.jacobian.j[i][5] * i_a[2][2];
+
+            j_m.j[i][i + 6] = constraint.jacobian.j[i][i + 6] * m_b;
+
+            j_m.j[i][9] = constraint.jacobian.j[i][9] * i_b[0][0]
+                + constraint.jacobian.j[i][10] * i_b[1][0]
+                + constraint.jacobian.j[i][11] * i_b[2][0];
+
+            j_m.j[i][10] = constraint.jacobian.j[i][9] * i_b[0][1]
+                + constraint.jacobian.j[i][10] * i_b[1][1]
+                + constraint.jacobian.j[i][11] * i_b[2][1];
+
+            j_m.j[i][11] = constraint.jacobian.j[i][9] * i_b[0][2]
+                + constraint.jacobian.j[i][10] * i_b[1][2]
+                + constraint.jacobian.j[i][11] * i_b[2][2];
 
             for j in 0..n {
-                k_matrix[i][j] = j_m[i].dot(&constraint.jacobian[j]);
+                k_matrix[i][j] = j_m.dot(i, &constraint.jacobian.j[j]);
             }
 
             // RHS side calculation now
-            rhs[i] = (-1.0 * constraint.velocity_bias[i])
-                - (j_m[i].v_a.dot(f_a_ext.to_global(body_a_orient))
-                    + j_m[i].w_a.dot(t_a_ext.to_global(body_a_orient))
-                    + j_m[i].v_b.dot(f_b_ext.to_global(body_b_orient))
-                    + j_m[i].w_b.dot(t_b_ext.to_global(body_b_orient)));
+            rhs[i] = (-1.0 * constraint.velocity_bias[i]) - (j_m.dot(i, &f_ext));
         }
 
-        gauss_sediel(&k_matrix, &rhs, &mut constraint.lagrange_multiplier, 25);
+        gauss_sediel(&k_matrix, &rhs, &mut constraint.lagrange_multiplier, 50);
 
-        for i in 0..n {
-            constraint.constraint_forces.f_a = constraint.constraint_forces.f_a
-                + constraint.jacobian[i].v_a * constraint.lagrange_multiplier[i];
-
-            constraint.constraint_forces.t_a = constraint.constraint_forces.t_a
-                + constraint.jacobian[i].w_a * constraint.lagrange_multiplier[i];
-
-            constraint.constraint_forces.f_b = constraint.constraint_forces.f_b
-                + constraint.jacobian[i].v_b * constraint.lagrange_multiplier[i];
-
-            constraint.constraint_forces.t_b = constraint.constraint_forces.t_b
-                + constraint.jacobian[i].w_b * constraint.lagrange_multiplier[i];
+        for i in 0..12 {
+            for j in 0..n {
+                constraint.constraint_forces[i] = constraint.constraint_forces[i]
+                    + constraint.jacobian.j[j][i] * constraint.lagrange_multiplier[j];
+            }
         }
     }
 }

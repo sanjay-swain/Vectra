@@ -138,24 +138,40 @@ where
     pub fn apply_constraint_forces(&mut self) {
         for constraint in &self.constraints {
             self.bodies[constraint.body_a_index].apply_force(Force {
-                force: constraint.constraint_forces.f_a,
+                force: DVec3::new(
+                    constraint.constraint_forces[0],
+                    constraint.constraint_forces[1],
+                    constraint.constraint_forces[2],
+                ),
                 position: constraint.body_a_anchor,
                 frame: Frame::Global,
             });
 
             self.bodies[constraint.body_a_index].apply_torque(Torque {
-                torque: constraint.constraint_forces.t_a,
+                torque: DVec3::new(
+                    constraint.constraint_forces[3],
+                    constraint.constraint_forces[4],
+                    constraint.constraint_forces[5],
+                ),
                 frame: Frame::Global,
             });
 
             self.bodies[constraint.body_b_index].apply_force(Force {
-                force: constraint.constraint_forces.f_b,
+                force: DVec3::new(
+                    constraint.constraint_forces[6],
+                    constraint.constraint_forces[7],
+                    constraint.constraint_forces[8],
+                ),
                 position: constraint.body_b_anchor,
                 frame: Frame::Global,
             });
 
             self.bodies[constraint.body_b_index].apply_torque(Torque {
-                torque: constraint.constraint_forces.t_b,
+                torque: DVec3::new(
+                    constraint.constraint_forces[9],
+                    constraint.constraint_forces[10],
+                    constraint.constraint_forces[11],
+                ),
                 frame: Frame::Global,
             });
         }

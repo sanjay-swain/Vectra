@@ -77,9 +77,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 world.constraints[0].body_b_anchor,
             ),
 
-            force_x: world.constraints[0].constraint_forces.t_b.x,
-            force_y: world.constraints[0].constraint_forces.t_b.y,
-            force_z: world.constraints[0].constraint_forces.t_b.z,
+            force_x: world.constraints[0].constraint_forces[9],
+            force_y: world.constraints[0].constraint_forces[10],
+            force_z: world.constraints[0].constraint_forces[11],
         };
 
         wtr.serialize(log)?;

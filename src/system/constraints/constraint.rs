@@ -1,22 +1,6 @@
 use glam::DVec3;
 
-use crate::system::constraints::joints::{JacobianRow, Joint};
-
-pub struct ConstraintForce {
-    pub f_a: DVec3,
-    pub t_a: DVec3,
-    pub f_b: DVec3,
-    pub t_b: DVec3,
-}
-
-impl ConstraintForce {
-    pub const ZERO: Self = Self {
-        f_a: DVec3::ZERO,
-        t_a: DVec3::ZERO,
-        f_b: DVec3::ZERO,
-        t_b: DVec3::ZERO,
-    };
-}
+use crate::system::constraints::joints::{Jacobian, Joint};
 
 pub struct Constraint {
     pub body_a_index: usize,
@@ -27,10 +11,10 @@ pub struct Constraint {
 
     pub joint: Box<dyn Joint>,
 
-    pub jacobian: [JacobianRow; 6],
+    pub jacobian: Jacobian,
     pub velocity_bias: [f64; 6],
 
-    pub constraint_forces: ConstraintForce,
+    pub constraint_forces: [f64; 12],
 
     pub lagrange_multiplier: [f64; 6],
 }
@@ -49,10 +33,10 @@ impl Constraint {
             body_a_anchor,
             body_b_anchor,
             joint,
-            jacobian: [JacobianRow::ZERO; 6],
+            jacobian: Jacobian::ZERO,
             velocity_bias: [0.0; 6],
 
-            constraint_forces: ConstraintForce::ZERO,
+            constraint_forces: [0.0; 12],
 
             lagrange_multiplier: [0.0; 6],
         }
