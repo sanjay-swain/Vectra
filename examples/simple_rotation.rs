@@ -24,13 +24,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
-    let mut world = World::new(force_solver, constraint_solver, integration, 1e-5);
+    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-5) {
+        Ok(it) => it,
+        Err(_err) => panic!(),
+    };
 
     world.enable_gravity = false;
 
     let _ = match world.create_body(3.0, DMat3::from_diagonal(DVec3::ONE), State::ZERO, false) {
         Ok(it) => it,
-        Err(err) => panic!(),
+        Err(_err) => panic!(),
     };
 
     let mut t: f64 = 0.0;

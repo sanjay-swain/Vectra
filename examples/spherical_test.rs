@@ -14,19 +14,13 @@ use std::error::Error;
 use std::fs::File;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let file = File::create("simulation_log_2.csv")?;
+    let file = File::create("simulation_log_3.csv")?;
     let mut wtr = csv::Writer::from_writer(file);
 
     println!("Starting");
-    let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
-    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-5) {
-        Ok(it) => it,
-        Err(_err) => panic!(),
-    };
-
-    let gr = match world.add_ground() {
+    let mut world = match World::new(NewtonEuler {}, constraint_solver, integration, 1e-5) {
         Ok(it) => it,
         Err(_err) => panic!(),
     };
@@ -35,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         1.0,
         DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
         State {
-            position: DVec3::new(1.0, 0.0, 5.0),
+            position: DVec3::new(0.0, 0.0, 5.0),
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
             angular_velocity: DVec3::ZERO,
@@ -46,22 +40,43 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_err) => panic!(),
     };
 
+    let b2 = match world.create_body(
+        1.0,
+        DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
+        State {
+            position: DVec3::new(0.0, 0.0, -5.0),
+            velocity: DVec3::ZERO,
+            orientation: DQuat::IDENTITY,
+            angular_velocity: DVec3::Z,
+        },
+        false,
+    ) {
+        Ok(it) => it,
+        Err(_err) => panic!(),
+    };
+
     world.create_constraint(
-        gr,
         b1,
+        b2,
+        DVec3::new(0.0, 0.0, -5.0),
         DVec3::new(0.0, 0.0, 5.0),
-        DVec3::new(-1.0, 0.0, 0.0),
         Box::new(SphericalJoint {}),
     );
 
     let mut t = 0.0;
 
     while t < 5.0 {
-        world.apply_gravity_force();
+        // world.apply_gravity_force();
 
         for constraint in &mut world.constraints {
             world.constraint_solver.solve(constraint, &world.bodies);
         }
+
+        // world.bodies[b1].apply_force(Force::new(
+        //     DVec3::Z,
+        //     DVec3::ZERO,
+        //     kite_core::system::interactions::Frame::Local,
+        // ));
 
         world.apply_constraint_forces();
 
@@ -69,17 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        let ener = world.bodies[b1].mass
-            * (world.gravity.force.length() * world.bodies[b1].state.position.z
-                + 0.5
-                    * world.bodies[b1].state.velocity.length()
-                    * world.bodies[b1].state.velocity.length());
-
-        let mut log = PhysicsLog::ZERO;
-
-        log.update(&world.bodies[1], &world.constraints[0], t);
-
-        log.energy = ener;
+        let log = PhysicsLog::ZERO;
 
         wtr.serialize(log)?;
 

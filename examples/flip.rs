@@ -20,7 +20,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
-    let mut world = World::new(force_solver, constraint_solver, integration, 1e-5);
+    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-5) {
+        Ok(it) => it,
+        Err(_err) => panic!(),
+    };
 
     world.enable_gravity = false;
 
@@ -36,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         false,
     ) {
         Ok(it) => it,
-        Err(err) => panic!(),
+        Err(_err) => panic!(),
     };
 
     let mut t: f64 = 0.0;
