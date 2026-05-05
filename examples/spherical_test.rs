@@ -7,7 +7,9 @@ use kite_core::{
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     plots::PhysicsLog,
-    system::{constraints::spherical::SphericalJoint, state::State, world::World},
+    system::{
+        constraints::spherical::SphericalJoint, interactions::Force, state::State, world::World,
+    },
 };
 
 use std::error::Error;
@@ -29,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         1.0,
         DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
         State {
-            position: DVec3::new(0.0, 0.0, 5.0),
+            position: DVec3::new(1.0, 0.0, 0.0),
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
             angular_velocity: DVec3::ZERO,
@@ -44,7 +46,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         1.0,
         DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
         State {
-            position: DVec3::new(0.0, 0.0, -5.0),
+            position: DVec3::new(-1.0, 0.0, 0.0),
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
             angular_velocity: DVec3::Z,
@@ -58,8 +60,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     world.create_constraint(
         b1,
         b2,
-        DVec3::new(0.0, 0.0, -5.0),
-        DVec3::new(0.0, 0.0, 5.0),
+        DVec3::new(-1.0, 0.0, 0.0),
+        DVec3::new(1.0, 0.0, 0.0),
         Box::new(SphericalJoint {}),
     );
 
@@ -72,11 +74,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             world.constraint_solver.solve(constraint, &world.bodies);
         }
 
-        // world.bodies[b1].apply_force(Force::new(
-        //     DVec3::Z,
-        //     DVec3::ZERO,
-        //     kite_core::system::interactions::Frame::Local,
-        // ));
+        world.bodies[b1].apply_force(Force::new(
+            DVec3::X,
+            DVec3::ZERO,
+            kite_core::system::interactions::Frame::Local,
+        ));
 
         world.apply_constraint_forces();
 
@@ -84,7 +86,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        let log = PhysicsLog::ZERO;
+        let mut log = PhysicsLog::ZERO;
+
+        log.update(&world.bodies[b1], &world.constraints[0], t);
 
         wtr.serialize(log)?;
 

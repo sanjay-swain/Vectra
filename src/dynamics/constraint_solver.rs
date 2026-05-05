@@ -33,10 +33,10 @@ impl ConstraintSolver for AccelerationConstraint {
             .inertia_inv_world()
             .to_cols_array_2d();
 
-        let f_a_ext: Force;
-        let f_b_ext: Force;
-        let t_a_ext: Torque;
-        let t_b_ext: Torque;
+        let mut f_a_ext: Force;
+        let mut f_b_ext: Force;
+        let mut t_a_ext: Torque;
+        let mut t_b_ext: Torque;
 
         (f_a_ext, t_a_ext) = compute_resultant(
             &bodies[constraint.body_a_index].forces,
@@ -49,6 +49,11 @@ impl ConstraintSolver for AccelerationConstraint {
             &bodies[constraint.body_b_index].torques,
             body_b_orient,
         );
+
+        f_a_ext.force = f_a_ext.to_global(body_a_orient);
+        f_b_ext.force = f_b_ext.to_global(body_b_orient);
+        t_a_ext.torque = t_a_ext.to_global(body_a_orient);
+        t_b_ext.torque = t_b_ext.to_global(body_b_orient);
 
         let f_ext: [f64; 12] = [
             f_a_ext.force.x,
@@ -87,13 +92,6 @@ impl ConstraintSolver for AccelerationConstraint {
         constraint.constraint_forces = [0.0; 12];
 
         for i in 0..n {
-            // j_m[i] = JacobianRow {
-            //     v_a: constraint.jacobian[i].v_a * m_a,
-            //     w_a: i_a * constraint.jacobian[i].w_a,
-            //     v_b: constraint.jacobian[i].v_b * m_b,
-            //     w_b: i_b * constraint.jacobian[i].w_b,
-            // };
-
             j_m.j[i][i] = constraint.jacobian.j[i][i] * m_a;
 
             j_m.j[i][3] = constraint.jacobian.j[i][3] * i_a[0][0]
@@ -133,10 +131,11 @@ impl ConstraintSolver for AccelerationConstraint {
         gauss_sediel(&k_matrix, &rhs, &mut constraint.lagrange_multiplier, 50);
 
         for i in 0..12 {
+            let mut sum = 0.0;
             for j in 0..n {
-                constraint.constraint_forces[i] = constraint.constraint_forces[i]
-                    + constraint.jacobian.j[j][i] * constraint.lagrange_multiplier[j];
+                sum = sum + constraint.jacobian.j[j][i] * constraint.lagrange_multiplier[j];
             }
+            constraint.constraint_forces[i] = sum;
         }
     }
 }

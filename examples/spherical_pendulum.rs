@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         1.0,
         DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
         State {
-            position: DVec3::new(1.0, 0.0, 5.0),
+            position: DVec3::new(1.0, 0.0, 1.0),
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
             angular_velocity: DVec3::ZERO,
@@ -49,14 +49,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     world.create_constraint(
         gr,
         b1,
-        DVec3::new(0.0, 0.0, 5.0),
+        DVec3::new(0.0, 0.0, 1.0),
         DVec3::new(-1.0, 0.0, 0.0),
         Box::new(SphericalJoint {}),
     );
 
     let mut t = 0.0;
 
-    while t < 5.0 {
+    while t < 10.0 {
         world.apply_gravity_force();
 
         for constraint in &mut world.constraints {

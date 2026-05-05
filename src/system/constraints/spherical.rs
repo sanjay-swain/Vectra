@@ -20,19 +20,21 @@ impl Joint for SphericalJoint {
         anchor_b: DVec3,
         jacobian: &mut Jacobian,
     ) {
-        let r_a = state_a.orientation.mul_vec3(anchor_a);
-        let r_b = state_b.orientation.mul_vec3(anchor_b);
-        *jacobian = Jacobian::ZERO;
+        let r_a = state_a.orientation * anchor_a;
+        let r_b = state_b.orientation * anchor_b;
 
         jacobian.j[0] = [
+            //    v_a     |       w_a         |      v_b     |       w_b
             -1.0, 0.0, 0.0, 0.0, -r_a.z, r_a.y, 1.0, 0.0, 0.0, 0.0, r_b.z, -r_b.y,
         ];
 
         jacobian.j[1] = [
+            //    v_a     |       w_a         |      v_b     |       w_b
             0.0, -1.0, 0.0, r_a.z, 0.0, -r_a.x, 0.0, 1.0, 0.0, -r_b.z, 0.0, r_b.x,
         ];
 
         jacobian.j[2] = [
+            //    v_a     |       w_a         |      v_b     |       w_b
             0.0, 0.0, -1.0, -r_a.y, r_a.x, 0.0, 0.0, 0.0, 1.0, r_b.y, -r_b.x, 0.0,
         ];
     }
@@ -45,17 +47,13 @@ impl Joint for SphericalJoint {
         anchor_b: DVec3,
         velocity_bias: &mut [f64; 6],
     ) {
-        let r_a = state_a.orientation.mul_vec3(anchor_a);
-        let r_b = state_b.orientation.mul_vec3(anchor_b);
-
-        velocity_bias[0] = 0.0;
-        velocity_bias[1] = 0.0;
-        velocity_bias[2] = 0.0;
+        let r_a = state_a.orientation * anchor_a;
+        let r_b = state_b.orientation * anchor_b;
 
         // The angular velocity within the state property of the body is with respect to local coordinates
         // First we need to convert them to global coordinates
-        let w_a = state_a.orientation.mul_vec3(state_a.angular_velocity);
-        let w_b = state_b.orientation.mul_vec3(state_b.angular_velocity);
+        let w_a = state_a.orientation * state_a.angular_velocity;
+        let w_b = state_b.orientation * state_b.angular_velocity;
 
         let dot_wr_a = w_a.x * r_a.x + w_a.y * r_a.y + w_a.z * r_a.z;
         let dot_ww_a = w_a.x * w_a.x + w_a.y * w_a.y + w_a.z * w_a.z;

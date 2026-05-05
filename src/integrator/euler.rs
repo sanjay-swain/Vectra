@@ -7,7 +7,7 @@ pub struct ExplicitEuler {}
 impl Integrator for ExplicitEuler {
     fn step(&self, bodies: &mut Vec<Body>, step_size: f64) {
         for body in bodies {
-            body.state.position += body.state_derivative.velocity * step_size;
+            body.state.position += body.state.velocity * step_size;
             body.state.velocity += body.state_derivative.acceleration * step_size;
 
             let q = body.state.orientation;
