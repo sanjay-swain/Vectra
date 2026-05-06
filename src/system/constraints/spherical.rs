@@ -1,4 +1,4 @@
-use glam::DVec3;
+use glam::{DMat3, DVec3};
 
 use crate::system::{
     constraints::joints::{Jacobian, Joint},
@@ -55,23 +55,36 @@ impl Joint for SphericalJoint {
         let w_a = state_a.orientation * state_a.angular_velocity;
         let w_b = state_b.orientation * state_b.angular_velocity;
 
-        let dot_wr_a = w_a.x * r_a.x + w_a.y * r_a.y + w_a.z * r_a.z;
-        let dot_ww_a = w_a.x * w_a.x + w_a.y * w_a.y + w_a.z * w_a.z;
+        let omega_b = DMat3 {
+            x_axis: DVec3::new(0.0, -w_b.z, w_b.y),
+            y_axis: DVec3::new(w_b.z, 0.0, -w_b.x),
+            z_axis: DVec3::new(-w_b.y, w_b.x, 0.0),
+        };
 
-        let res_x_a = w_a.x * dot_wr_a - r_a.x * dot_ww_a;
-        let res_y_a = w_a.y * dot_wr_a - r_a.y * dot_ww_a;
-        let res_z_a = w_a.z * dot_wr_a - r_a.z * dot_ww_a;
+        let omega_a = DMat3 {
+            x_axis: DVec3::new(0.0, -w_a.z, w_a.y),
+            y_axis: DVec3::new(w_a.z, 0.0, -w_a.x),
+            z_axis: DVec3::new(-w_a.y, w_a.x, 0.0),
+        };
 
-        let dot_wr_b = w_b.x * r_b.x + w_b.y * r_b.y + w_b.z * r_b.z;
-        let dot_ww_b = w_b.x * w_b.x + w_b.y * w_b.y + w_b.z * w_b.z;
+        let r_a_mat = DMat3 {
+            x_axis: DVec3::new(0.0, -r_a.z, r_a.y),
+            y_axis: DVec3::new(r_a.z, 0.0, -r_a.x),
+            z_axis: DVec3::new(-r_a.y, r_a.x, 0.0),
+        };
 
-        let res_x_b = w_b.x * dot_wr_b - r_b.x * dot_ww_b;
-        let res_y_b = w_b.y * dot_wr_b - r_b.y * dot_ww_b;
-        let res_z_b = w_b.z * dot_wr_b - r_b.z * dot_ww_b;
+        let r_b_mat = DMat3 {
+            x_axis: DVec3::new(0.0, -r_b.z, r_b.y),
+            y_axis: DVec3::new(r_b.z, 0.0, -r_b.x),
+            z_axis: DVec3::new(-r_b.y, r_b.x, 0.0),
+        };
 
-        velocity_bias[0] = res_x_b - res_x_a;
-        velocity_bias[1] = res_y_b - res_y_a;
-        velocity_bias[2] = res_z_b - res_z_a;
+        let res =
+            (omega_a.mul_mat3(&r_a_mat)).mul_vec3(w_a) - (omega_b.mul_mat3(&r_b_mat)).mul_vec3(w_b);
+
+        velocity_bias[0] = res.x;
+        velocity_bias[1] = res.y;
+        velocity_bias[2] = res.z;
     }
 
     fn calculate_joint_error(

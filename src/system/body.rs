@@ -40,7 +40,7 @@ impl Body {
 
     pub fn inertia_inv_world(&self) -> DMat3 {
         let r = DMat3::from_quat(self.state.orientation);
-        r * self.inertia_inv * r.transpose()
+        (r * self.inertia_inv) * r.transpose()
     }
 }
 
