@@ -178,7 +178,7 @@ where
                     constraint.constraint_forces[1],
                     constraint.constraint_forces[2],
                 ),
-                position: constraint.body_a_anchor,
+                position: DVec3::ZERO,
                 frame: Frame::Global,
             });
 
@@ -197,7 +197,7 @@ where
                     constraint.constraint_forces[7],
                     constraint.constraint_forces[8],
                 ),
-                position: constraint.body_b_anchor,
+                position: DVec3::ZERO,
                 frame: Frame::Global,
             });
 
