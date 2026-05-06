@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             position: DVec3::new(-1.0, 0.0, 0.0),
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
-            angular_velocity: DVec3::Z,
+            angular_velocity: DVec3::ZERO,
         },
         false,
     ) {
@@ -70,15 +70,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     while t < 5.0 {
         // world.apply_gravity_force();
 
-        for constraint in &mut world.constraints {
-            world.constraint_solver.solve(constraint, &world.bodies);
-        }
-
         world.bodies[b1].apply_force(Force::new(
             DVec3::X,
             DVec3::ZERO,
-            kite_core::system::interactions::Frame::Local,
+            kite_core::system::interactions::Frame::Global,
         ));
+
+        for constraint in &mut world.constraints {
+            world.constraint_solver.solve(constraint, &world.bodies);
+        }
 
         world.apply_constraint_forces();
 
@@ -96,7 +96,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.clear_forces_and_torques();
     }
-    println!("{}", world.bodies[1].state.position);
+    println!(
+        "{} {}",
+        world.bodies[0].state.position, world.bodies[1].state.position
+    );
     wtr.flush()?;
     Ok(())
 }
