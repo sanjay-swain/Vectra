@@ -56,6 +56,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut t = 0.0;
 
+    let mut step: u64 = 0;
+
+    let log_enable = true;
+
     while t < 10.0 {
         world.apply_gravity_force();
 
@@ -69,23 +73,33 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        let ener = world.bodies[b1].mass
-            * (world.gravity.force.length() * world.bodies[b1].state.position.z
-                + 0.5
-                    * world.bodies[b1].state.velocity.length()
-                    * world.bodies[b1].state.velocity.length());
+        if log_enable && (step % 100 == 0) {
+            let ener = world.bodies[b1].mass
+                * (world.gravity.force.length() * world.bodies[b1].state.position.z
+                    + 0.5
+                        * world.bodies[b1].state.velocity.length()
+                        * world.bodies[b1].state.velocity.length());
 
-        let mut log = PhysicsLog::ZERO;
+            let mut log = PhysicsLog::ZERO;
 
-        log.update(&world.bodies[1], &world.constraints[0], t);
+            log.update(&world.bodies[1], &world.constraints[0], t);
 
-        log.energy = ener;
+            log.energy = ener;
 
-        wtr.serialize(log)?;
+            log.constraint_error = world.constraints[0].joint.calculate_joint_error(
+                &world.bodies[0].state,
+                &world.bodies[1].state,
+                world.constraints[0].body_a_anchor,
+                world.constraints[0].body_b_anchor,
+            );
+
+            wtr.serialize(log)?;
+        }
 
         t += world.step_size;
 
         world.clear_forces_and_torques();
+        step += 1;
     }
     println!("{}", world.bodies[1].state.position);
     wtr.flush()?;
