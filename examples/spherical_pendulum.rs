@@ -74,17 +74,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         world.integrator.step(&mut world.bodies, world.step_size);
 
         if log_enable && (step % 100 == 0) {
-            let ener = world.bodies[b1].mass
-                * (world.gravity.force.length() * world.bodies[b1].state.position.z
-                    + 0.5
-                        * world.bodies[b1].state.velocity.length()
-                        * world.bodies[b1].state.velocity.length());
-
             let mut log = PhysicsLog::ZERO;
 
             log.update(&world.bodies[1], &world.constraints[0], t);
 
-            log.energy = ener;
+            log.energy = world.bodies[b1].mass
+                * (world.gravity.force.length() * world.bodies[b1].state.position.z)
+                + world.bodies[b1].kinetic_energy();
 
             log.constraint_error = world.constraints[0].joint.calculate_joint_error(
                 &world.bodies[0].state,

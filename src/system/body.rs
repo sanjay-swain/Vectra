@@ -42,6 +42,15 @@ impl Body {
         let r = DMat3::from_quat(self.state.orientation);
         (r * self.inertia_inv) * r.transpose()
     }
+
+    pub fn kinetic_energy(&self) -> f64 {
+        return 0.5 * self.mass * self.state.velocity.length() * self.state.velocity.length()
+            + 0.5
+                * (self
+                    .state
+                    .angular_velocity
+                    .dot(self.inertia * self.state.angular_velocity));
+    }
 }
 
 impl Default for Body {
