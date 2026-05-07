@@ -62,7 +62,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         b2,
         DVec3::new(-1.0, 0.0, 0.0),
         DVec3::new(1.0, 0.0, 0.0),
-        Box::new(SphericalJoint {}),
+        Box::new(SphericalJoint::new(
+            DVec3::new(-1.0, 0.0, 0.0),
+            DVec3::new(1.0, 0.0, 0.0),
+        )),
     );
 
     let mut t = 0.0;

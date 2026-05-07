@@ -5,23 +5,25 @@ use crate::system::{
     state::State,
 };
 
-pub struct SphericalJoint {}
+pub struct SphericalJoint {
+    anchor_a: DVec3,
+    anchor_b: DVec3,
+}
+
+impl SphericalJoint {
+    pub fn new(anchor_a: DVec3, anchor_b: DVec3) -> Self {
+        Self { anchor_a, anchor_b }
+    }
+}
 
 impl Joint for SphericalJoint {
     fn restricted_dof(&self) -> usize {
         return 3;
     }
 
-    fn calculate_jacobian(
-        &self,
-        state_a: &State,
-        state_b: &State,
-        anchor_a: DVec3,
-        anchor_b: DVec3,
-        jacobian: &mut Jacobian,
-    ) {
-        let r_a = state_a.orientation * anchor_a;
-        let r_b = state_b.orientation * anchor_b;
+    fn calculate_jacobian(&self, state_a: &State, state_b: &State, jacobian: &mut Jacobian) {
+        let r_a = state_a.orientation * self.anchor_a;
+        let r_b = state_b.orientation * self.anchor_b;
 
         jacobian.j[0] = [
             //    v_a     |       w_a         |      v_b     |       w_b
@@ -43,12 +45,10 @@ impl Joint for SphericalJoint {
         &self,
         state_a: &State,
         state_b: &State,
-        anchor_a: DVec3,
-        anchor_b: DVec3,
         velocity_bias: &mut [f64; 6],
     ) {
-        let r_a = state_a.orientation * anchor_a;
-        let r_b = state_b.orientation * anchor_b;
+        let r_a = state_a.orientation * self.anchor_a;
+        let r_b = state_b.orientation * self.anchor_b;
 
         // The angular velocity within the state property of the body is with respect to local coordinates
         // First we need to convert them to global coordinates
@@ -87,15 +87,9 @@ impl Joint for SphericalJoint {
         velocity_bias[2] = res.z;
     }
 
-    fn calculate_joint_error(
-        &self,
-        state_a: &State,
-        state_b: &State,
-        anchor_a: DVec3,
-        anchor_b: DVec3,
-    ) -> f64 {
-        ((state_b.position + state_b.orientation * anchor_b)
-            - (state_a.position + state_a.orientation * anchor_a))
+    fn calculate_joint_error(&self, state_a: &State, state_b: &State) -> f64 {
+        ((state_b.position + state_b.orientation * self.anchor_b)
+            - (state_a.position + state_a.orientation * self.anchor_a))
             .length()
     }
 }
@@ -123,15 +117,9 @@ mod tests {
 
         let mut jacobian = Jacobian::ZERO;
 
-        let joint = SphericalJoint {};
+        let joint = SphericalJoint::new(anchor_a, anchor_b);
 
-        joint.calculate_jacobian(
-            &body_a_state,
-            &body_b_state,
-            anchor_a,
-            anchor_b,
-            &mut jacobian,
-        );
+        joint.calculate_jacobian(&body_a_state, &body_b_state, &mut jacobian);
 
         let mut expected = Jacobian::ZERO;
         expected.j[0][0] = -1.0;
@@ -186,15 +174,9 @@ mod tests {
 
         let mut jacobian = Jacobian::ZERO;
 
-        let joint = SphericalJoint {};
+        let joint = SphericalJoint::new(anchor_a, anchor_b);
 
-        joint.calculate_jacobian(
-            &body_a_state,
-            &body_b_state,
-            anchor_a,
-            anchor_b,
-            &mut jacobian,
-        );
+        joint.calculate_jacobian(&body_a_state, &body_b_state, &mut jacobian);
 
         let mut expected = Jacobian::ZERO;
         expected.j = [
@@ -244,18 +226,12 @@ mod tests {
         let anchor_a = DVec3::new(0.0, 2.0, 0.0);
         let anchor_b = DVec3::new(2.0, 0.0, 0.0);
 
-        let joint = SphericalJoint {};
+        let joint = SphericalJoint::new(anchor_a, anchor_b);
 
         let mut vel_bias = [0.0; 6];
         let expected_bias = [0.0, -18.0, 0.0, 0.0, 0.0, 0.0];
 
-        joint.calculate_velocity_bias(
-            &body_a_state,
-            &body_b_state,
-            anchor_a,
-            anchor_b,
-            &mut vel_bias,
-        );
+        joint.calculate_velocity_bias(&body_a_state, &body_b_state, &mut vel_bias);
 
         for i in 0..6 {
             assert!(

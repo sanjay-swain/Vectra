@@ -38,16 +38,12 @@ impl ConstraintSolver for AccelerationConstraint {
         constraint.joint.calculate_jacobian(
             &bodies[constraint.body_a_index].state,
             &bodies[constraint.body_b_index].state,
-            constraint.body_a_anchor,
-            constraint.body_b_anchor,
             &mut constraint.jacobian,
         );
 
         constraint.joint.calculate_velocity_bias(
             &bodies[constraint.body_a_index].state,
             &bodies[constraint.body_b_index].state,
-            constraint.body_a_anchor,
-            constraint.body_b_anchor,
             &mut constraint.velocity_bias,
         );
 

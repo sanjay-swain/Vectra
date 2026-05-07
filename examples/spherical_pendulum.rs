@@ -51,7 +51,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         b1,
         DVec3::new(0.0, 0.0, 1.0),
         DVec3::new(-1.0, 0.0, 0.0),
-        Box::new(SphericalJoint {}),
+        Box::new(SphericalJoint::new(
+            DVec3::new(0.0, 0.0, 1.0),
+            DVec3::new(-1.0, 0.0, 0.0),
+        )),
     );
 
     let mut t = 0.0;
@@ -82,12 +85,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 * (world.gravity.force.length() * world.bodies[b1].state.position.z)
                 + world.bodies[b1].kinetic_energy();
 
-            log.constraint_error = world.constraints[0].joint.calculate_joint_error(
-                &world.bodies[0].state,
-                &world.bodies[1].state,
-                world.constraints[0].body_a_anchor,
-                world.constraints[0].body_b_anchor,
-            );
+            log.constraint_error = world.constraints[0]
+                .joint
+                .calculate_joint_error(&world.bodies[0].state, &world.bodies[1].state);
 
             wtr.serialize(log)?;
         }
