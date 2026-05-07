@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )),
     );
 
-    let mut t = 0.0;
+    let mut t: f64 = 0.0;
 
     let mut step: u64 = 0;
 

@@ -50,10 +50,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         gr,
         b1,
         DVec3::new(0.0, 0.0, 1.0),
-        DVec3::new(-1.0, 0.0, 0.0),
+        DVec3::new(0.0, 0.0, 0.0),
         Box::new(DistanceJoint::new(
             DVec3::new(0.0, 0.0, 1.0),
-            DVec3::new(-1.0, 0.0, 0.0),
+            DVec3::new(0.0, 0.0, 0.0),
             1.0,
         )),
     );
@@ -64,7 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let log_enable = true;
 
-    while t < 10.0 {
+    while t < 5.0 {
         world.apply_gravity_force();
 
         for constraint in &mut world.constraints {
