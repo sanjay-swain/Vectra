@@ -47,7 +47,27 @@ impl ConstraintSolver for AccelerationConstraint {
             &mut constraint.velocity_bias,
         );
 
-        // println!("{:#?}", constraint.velocity_bias);
+        let (fa_ext, ta_ext) = compute_resultant(
+            &bodies[constraint.body_a_index].forces,
+            &bodies[constraint.body_a_index].torques,
+            body_a_orient,
+        );
+
+        let (fb_ext, tb_ext) = compute_resultant(
+            &bodies[constraint.body_b_index].forces,
+            &bodies[constraint.body_b_index].torques,
+            body_b_orient,
+        );
+
+        let fa_ext = fa_ext.to_global(body_a_orient);
+        let fb_ext = fb_ext.to_global(body_b_orient);
+        let ta_ext = ta_ext.to_global(body_a_orient);
+        let tb_ext = tb_ext.to_global(body_b_orient);
+
+        let f_ext = [
+            fa_ext.x, fa_ext.y, fa_ext.z, ta_ext.x, ta_ext.y, ta_ext.z, fb_ext.x, fb_ext.y,
+            fb_ext.z, tb_ext.x, tb_ext.y, tb_ext.z,
+        ];
 
         for i in 0..n {
             let w_a = DVec3::new(
@@ -75,37 +95,11 @@ impl ConstraintSolver for AccelerationConstraint {
             j_m.j[i][9] = i_b.x_axis.dot(w_b);
             j_m.j[i][10] = i_b.y_axis.dot(w_b);
             j_m.j[i][11] = i_b.z_axis.dot(w_b);
-        }
 
-        for i in 0..n {
             for j in 0..n {
                 k_matrix[i][j] = j_m.dot(i, &constraint.jacobian.j[j]);
             }
-        }
 
-        let (fa_ext, ta_ext) = compute_resultant(
-            &bodies[constraint.body_a_index].forces,
-            &bodies[constraint.body_a_index].torques,
-            body_a_orient,
-        );
-
-        let (fb_ext, tb_ext) = compute_resultant(
-            &bodies[constraint.body_b_index].forces,
-            &bodies[constraint.body_b_index].torques,
-            body_b_orient,
-        );
-
-        let fa_ext = fa_ext.to_global(body_a_orient);
-        let fb_ext = fb_ext.to_global(body_b_orient);
-        let ta_ext = ta_ext.to_global(body_a_orient);
-        let tb_ext = tb_ext.to_global(body_b_orient);
-
-        let f_ext = [
-            fa_ext.x, fa_ext.y, fa_ext.z, ta_ext.x, ta_ext.y, ta_ext.z, fb_ext.x, fb_ext.y,
-            fb_ext.z, tb_ext.x, tb_ext.y, tb_ext.z,
-        ];
-
-        for i in 0..n {
             rhs[i] = -1.0 * constraint.velocity_bias[i] - j_m.dot(i, &f_ext);
         }
 
