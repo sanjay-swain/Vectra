@@ -6,19 +6,12 @@ use crate::system::{
 };
 
 pub struct DistanceJoint {
-    anchor_a: DVec3,
-    anchor_b: DVec3,
-
     length: f64,
 }
 
 impl DistanceJoint {
-    pub fn new(anchor_a: DVec3, anchor_b: DVec3, length: f64) -> Self {
-        Self {
-            anchor_a,
-            anchor_b,
-            length,
-        }
+    pub fn new(length: f64) -> Self {
+        Self { length }
     }
 }
 
@@ -27,9 +20,16 @@ impl Joint for DistanceJoint {
         return 1;
     }
 
-    fn calculate_jacobian(&self, state_a: &State, state_b: &State, jacobian: &mut Jacobian) {
-        let r_a = state_a.orientation * self.anchor_a;
-        let r_b = state_b.orientation * self.anchor_b;
+    fn calculate_jacobian(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+        jacobian: &mut Jacobian,
+    ) {
+        let r_a = state_a.orientation * anchor_a;
+        let r_b = state_b.orientation * anchor_b;
 
         let d = (state_a.position + r_a) - (state_b.position + r_b);
 
@@ -57,10 +57,12 @@ impl Joint for DistanceJoint {
         &self,
         state_a: &State,
         state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
         velocity_bias: &mut [f64; 6],
     ) {
-        let r_a = state_a.orientation * self.anchor_a;
-        let r_b = state_b.orientation * self.anchor_b;
+        let r_a = state_a.orientation * anchor_a;
+        let r_b = state_b.orientation * anchor_b;
 
         let d = (state_a.position + r_a) - (state_b.position + r_b);
 
@@ -77,10 +79,16 @@ impl Joint for DistanceJoint {
             - w_b.cross(r_b_d).dot(w_b);
     }
 
-    fn calculate_joint_error(&self, state_a: &State, state_b: &State) -> f64 {
+    fn calculate_joint_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> f64 {
         return self.length
-            - (state_a.position + state_a.orientation * self.anchor_a - state_b.position
-                + state_b.orientation * self.anchor_b)
+            - (state_a.position + state_a.orientation * anchor_a - state_b.position
+                + state_b.orientation * anchor_b)
                 .length();
     }
 }

@@ -4,6 +4,7 @@ use crate::system::{
 };
 
 use enum_dispatch::enum_dispatch;
+use glam::DVec3;
 
 #[derive(Clone, Copy)]
 pub struct Jacobian {
@@ -28,16 +29,31 @@ impl Jacobian {
 pub trait Joint {
     fn restricted_dof(&self) -> usize;
 
-    fn calculate_jacobian(&self, state_a: &State, state_b: &State, jacobian: &mut Jacobian);
+    fn calculate_jacobian(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+        jacobian: &mut Jacobian,
+    );
 
     fn calculate_velocity_bias(
         &self,
         state_a: &State,
         state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
         velocity_bias: &mut [f64; 6],
     );
 
-    fn calculate_joint_error(&self, state_a: &State, state_b: &State) -> f64;
+    fn calculate_joint_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> f64;
 }
 
 #[enum_dispatch(Joint)]

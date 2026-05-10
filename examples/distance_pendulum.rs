@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_err) => panic!(),
     };
 
-    let dist = DistanceJoint::new(DVec3::new(0.0, 0.0, 1.0), DVec3::new(0.0, 0.0, 0.0), 1.0);
+    let dist = DistanceJoint::new(1.0);
 
     world.create_constraint(
         gr,
@@ -93,9 +93,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 * (world.gravity.force.length() * world.bodies[b1].state.position.z)
                 + world.bodies[b1].kinetic_energy();
 
-            log.constraint_error = world.constraints[0]
-                .joint
-                .calculate_joint_error(&world.bodies[0].state, &world.bodies[1].state);
+            log.constraint_error = world.constraints[0].joint.calculate_joint_error(
+                &world.bodies[0].state,
+                &world.bodies[1].state,
+                world.constraints[0].anchor_a,
+                world.constraints[0].anchor_b,
+            );
 
             wtr.serialize(log)?;
         }

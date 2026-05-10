@@ -60,8 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_err) => panic!(),
     };
 
-    let spherical_joint =
-        SphericalJoint::new(DVec3::new(-1.0, 0.0, 0.0), DVec3::new(1.0, 0.0, 0.0));
+    let spherical_joint = SphericalJoint::new();
 
     world.create_constraint(
         b1,
