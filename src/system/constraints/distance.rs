@@ -8,6 +8,7 @@ use crate::system::{
 pub struct DistanceJoint {
     anchor_a: DVec3,
     anchor_b: DVec3,
+
     length: f64,
 }
 

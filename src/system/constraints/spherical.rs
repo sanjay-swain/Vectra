@@ -26,17 +26,17 @@ impl Joint for SphericalJoint {
         let r_b = state_b.orientation * self.anchor_b;
 
         jacobian.j[0] = [
-            //    v_a     |       w_a         |      v_b     |       w_b
+            //    v_a     |       w_a         |      v_b     |       w_b         |
             -1.0, 0.0, 0.0, 0.0, -r_a.z, r_a.y, 1.0, 0.0, 0.0, 0.0, r_b.z, -r_b.y,
         ];
 
         jacobian.j[1] = [
-            //    v_a     |       w_a         |      v_b     |       w_b
+            //    v_a     |       w_a         |      v_b     |       w_b         |
             0.0, -1.0, 0.0, r_a.z, 0.0, -r_a.x, 0.0, 1.0, 0.0, -r_b.z, 0.0, r_b.x,
         ];
 
         jacobian.j[2] = [
-            //    v_a     |       w_a         |      v_b     |       w_b
+            //    v_a     |       w_a         |      v_b     |       w_b         |
             0.0, 0.0, -1.0, -r_a.y, r_a.x, 0.0, 0.0, 0.0, 1.0, r_b.y, -r_b.x, 0.0,
         ];
     }

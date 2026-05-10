@@ -7,7 +7,14 @@ use kite_core::{
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     plots::PhysicsLog,
-    system::{constraints::spherical::SphericalJoint, state::State, world::World},
+    system::{
+        constraints::{
+            joints::{Joint, JointType},
+            spherical::SphericalJoint,
+        },
+        state::State,
+        world::World,
+    },
 };
 
 use std::error::Error;
@@ -46,15 +53,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_err) => panic!(),
     };
 
+    let spherical_joint =
+        SphericalJoint::new(DVec3::new(0.0, 0.0, 1.0), DVec3::new(-1.0, 0.0, 0.0));
+
     world.create_constraint(
         gr,
         b1,
         DVec3::new(0.0, 0.0, 1.0),
         DVec3::new(-1.0, 0.0, 0.0),
-        Box::new(SphericalJoint::new(
-            DVec3::new(0.0, 0.0, 1.0),
-            DVec3::new(-1.0, 0.0, 0.0),
-        )),
+        DQuat::IDENTITY,
+        DQuat::IDENTITY,
+        JointType::SphericalJoint(spherical_joint),
     );
 
     let mut t: f64 = 0.0;

@@ -1,4 +1,4 @@
-use glam::{DMat3, DVec3};
+use glam::{DMat3, DQuat, DVec3};
 
 use crate::{
     dynamics::{constraint_solver::ConstraintSolver, forces::ForceSolver},
@@ -6,7 +6,7 @@ use crate::{
     integrator::integrator::Integrator,
     system::{
         body::Body,
-        constraints::{constraint::Constraint, joints::Joint},
+        constraints::{constraint::Constraint, joints::JointType},
         interactions::{Force, Frame, Torque},
         state::State,
     },
@@ -135,7 +135,9 @@ where
         body_b_id: usize,
         anchor_a: DVec3,
         anchor_b: DVec3,
-        joint: Box<dyn Joint>,
+        joint_frame_a: DQuat,
+        joint_frame_b: DQuat,
+        joint: JointType,
     ) {
         let mut body_a_index = 0;
         let mut body_b_index = 0;
@@ -154,6 +156,8 @@ where
             body_b_index,
             anchor_a,
             anchor_b,
+            joint_frame_a,
+            joint_frame_b,
             joint,
         ));
     }

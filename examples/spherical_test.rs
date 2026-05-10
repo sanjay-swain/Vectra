@@ -8,7 +8,10 @@ use kite_core::{
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     plots::PhysicsLog,
     system::{
-        constraints::spherical::SphericalJoint, interactions::Force, state::State, world::World,
+        constraints::{joints::JointType, spherical::SphericalJoint},
+        interactions::Force,
+        state::State,
+        world::World,
     },
 };
 
@@ -57,15 +60,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_err) => panic!(),
     };
 
+    let spherical_joint =
+        SphericalJoint::new(DVec3::new(-1.0, 0.0, 0.0), DVec3::new(1.0, 0.0, 0.0));
+
     world.create_constraint(
         b1,
         b2,
         DVec3::new(-1.0, 0.0, 0.0),
         DVec3::new(1.0, 0.0, 0.0),
-        Box::new(SphericalJoint::new(
-            DVec3::new(-1.0, 0.0, 0.0),
-            DVec3::new(1.0, 0.0, 0.0),
-        )),
+        DQuat::IDENTITY,
+        DQuat::IDENTITY,
+        JointType::SphericalJoint(spherical_joint),
     );
 
     let mut t = 0.0;

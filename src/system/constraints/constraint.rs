@@ -1,15 +1,18 @@
-use glam::DVec3;
+use glam::{DQuat, DVec3};
 
-use crate::system::constraints::joints::{Jacobian, Joint};
+use crate::system::constraints::joints::{Jacobian, JointType};
 
 pub struct Constraint {
     pub body_a_index: usize,
     pub body_b_index: usize,
 
-    pub body_a_anchor: DVec3,
-    pub body_b_anchor: DVec3,
+    pub anchor_a: DVec3,
+    pub anchor_b: DVec3,
 
-    pub joint: Box<dyn Joint>,
+    pub joint_frame_a: DQuat,
+    pub joint_frame_b: DQuat,
+
+    pub joint: JointType,
 
     pub jacobian: Jacobian,
     pub velocity_bias: [f64; 6],
@@ -23,15 +26,19 @@ impl Constraint {
     pub fn new(
         body_a_index: usize,
         body_b_index: usize,
-        body_a_anchor: DVec3,
-        body_b_anchor: DVec3,
-        joint: Box<dyn Joint>,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+        joint_frame_a: DQuat,
+        joint_frame_b: DQuat,
+        joint: JointType,
     ) -> Self {
         Self {
             body_a_index,
             body_b_index,
-            body_a_anchor,
-            body_b_anchor,
+            anchor_a,
+            anchor_b,
+            joint_frame_a,
+            joint_frame_b,
             joint,
             jacobian: Jacobian::ZERO,
             velocity_bias: [0.0; 6],

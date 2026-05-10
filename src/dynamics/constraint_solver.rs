@@ -4,7 +4,10 @@ use crate::{
     dynamics::{forces::compute_resultant, gauss_seidel::gauss_sediel},
     system::{
         body::Body,
-        constraints::{constraint::Constraint, joints::Jacobian},
+        constraints::{
+            constraint::Constraint,
+            joints::{Jacobian, Joint},
+        },
     },
 };
 

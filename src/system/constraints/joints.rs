@@ -1,4 +1,9 @@
-use crate::system::state::State;
+use crate::system::{
+    constraints::{distance::DistanceJoint, spherical::SphericalJoint},
+    state::State,
+};
+
+use enum_dispatch::enum_dispatch;
 
 #[derive(Clone, Copy)]
 pub struct Jacobian {
@@ -19,6 +24,7 @@ impl Jacobian {
     }
 }
 
+#[enum_dispatch]
 pub trait Joint {
     fn restricted_dof(&self) -> usize;
 
@@ -32,6 +38,12 @@ pub trait Joint {
     );
 
     fn calculate_joint_error(&self, state_a: &State, state_b: &State) -> f64;
+}
+
+#[enum_dispatch(Joint)]
+pub enum JointType {
+    SphericalJoint,
+    DistanceJoint,
 }
 
 #[cfg(test)]
