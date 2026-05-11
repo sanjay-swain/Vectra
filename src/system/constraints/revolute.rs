@@ -153,12 +153,12 @@ impl Joint for RevoluteJoint {
         velocity_bias[1] = res.y;
         velocity_bias[2] = res.z;
 
-        velocity_bias[3] = -(w_a.cross(x_a_dot).dot(z_b)
+        velocity_bias[3] = w_a.cross(x_a_dot).dot(z_b)
             + 2.0 * (x_a_dot.dot(z_b_dot))
-            + x_a.dot(w_b.cross(z_b_dot)));
-        velocity_bias[4] = -(w_a.cross(y_a_dot).dot(z_b)
+            + x_a.dot(w_b.cross(z_b_dot));
+        velocity_bias[4] = w_a.cross(y_a_dot).dot(z_b)
             + 2.0 * (y_a_dot.dot(z_b_dot))
-            + y_a.dot(w_b.cross(z_b_dot)));
+            + y_a.dot(w_b.cross(z_b_dot));
     }
 
     fn calculate_joint_error(
