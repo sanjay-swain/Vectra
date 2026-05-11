@@ -59,32 +59,38 @@ impl Joint for RevoluteJoint {
         ];
 
         jacobian.j[3] = [
-            //    v_a    |       w_a         |      v_b     |       w_b         |
+            //      v_a
             0.0,
             0.0,
             0.0,
+            //      w_a
             x_cross_z.x,
             x_cross_z.y,
             x_cross_z.z,
+            //      v_b
             0.0,
             0.0,
             0.0,
+            //      w_b
             -x_cross_z.x,
             -x_cross_z.y,
             -x_cross_z.z,
         ];
 
         jacobian.j[4] = [
-            //    v_a    |       w_a         |      v_b     |       w_b         |
+            //      v_a
             0.0,
             0.0,
             0.0,
+            //      w_a
             y_cross_z.x,
             y_cross_z.y,
             y_cross_z.z,
+            //      v_b
             0.0,
             0.0,
             0.0,
+            //      w_b
             -y_cross_z.x,
             -y_cross_z.y,
             -y_cross_z.z,
