@@ -1,5 +1,8 @@
 use crate::system::{
-    constraints::{distance::DistanceJoint, revolute::RevoluteJoint, spherical::SphericalJoint},
+    constraints::{
+        distance::DistanceJoint, fixed::FixedJoint, revolute::RevoluteJoint,
+        spherical::SphericalJoint,
+    },
     state::State,
 };
 
@@ -61,6 +64,7 @@ pub enum JointType {
     SphericalJoint,
     DistanceJoint,
     RevoluteJoint,
+    FixedJoint,
 }
 
 #[cfg(test)]
