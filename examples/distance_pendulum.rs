@@ -8,10 +8,7 @@ use kite_core::{
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     plots::PhysicsLog,
     system::{
-        constraints::{
-            distance::DistanceJoint,
-            joints::{Joint, JointType},
-        },
+        constraints::{distance::DistanceJoint, joints::JointType},
         state::State,
         world::World,
     },
@@ -28,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
-    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-5) {
+    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-3) {
         Ok(it) => it,
         Err(_err) => panic!(),
     };
@@ -71,7 +68,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let log_enable = true;
 
-    while t < 5.0 {
+    while t < 10.0 {
         world.apply_gravity_force();
 
         for constraint in &mut world.constraints {
@@ -84,7 +81,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        if log_enable && (step % 100 == 0) {
+        if log_enable && (step % 10 == 0) {
             let mut log = PhysicsLog::ZERO;
 
             log.update(&world.bodies[1], &world.constraints[0], t);
@@ -93,12 +90,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 * (world.gravity.force.length() * world.bodies[b1].state.position.z)
                 + world.bodies[b1].kinetic_energy();
 
-            log.constraint_error = world.constraints[0].joint.calculate_joint_error(
-                &world.bodies[0].state,
-                &world.bodies[1].state,
-                world.constraints[0].anchor_a,
-                world.constraints[0].anchor_b,
-            );
+            // log.constraint_error = world.constraints[0].joint.calculate_joint_error(
+            //     &world.bodies[0].state,
+            //     &world.bodies[1].state,
+            //     world.constraints[0].anchor_a,
+            //     world.constraints[0].anchor_b,
+            // );
 
             wtr.serialize(log)?;
         }

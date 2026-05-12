@@ -8,10 +8,7 @@ use kite_core::{
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     plots::PhysicsLog,
     system::{
-        constraints::{
-            joints::{Joint, JointType},
-            spherical::SphericalJoint,
-        },
+        constraints::{joints::JointType, spherical::SphericalJoint},
         state::State,
         world::World,
     },
@@ -28,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
-    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-5) {
+    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-3) {
         Ok(it) => it,
         Err(_err) => panic!(),
     };
@@ -42,10 +39,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         1.0,
         DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
         State {
-            position: DVec3::new(1.0, 0.0, 1.0),
-            velocity: DVec3::ZERO,
+            position: DVec3::new(0.0, 0.0, 0.0),
+            velocity: DVec3::new(3.0, 0.0, 0.0),
             orientation: DQuat::IDENTITY,
-            angular_velocity: DVec3::ZERO,
+            angular_velocity: DVec3::new(0.0, 3.0, 0.0),
         },
         false,
     ) {
@@ -59,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         gr,
         b1,
         DVec3::new(0.0, 0.0, 1.0),
-        DVec3::new(-1.0, 0.0, 0.0),
+        DVec3::new(0.0, 0.0, 1.0),
         DQuat::IDENTITY,
         DQuat::IDENTITY,
         JointType::SphericalJoint(spherical_joint),
@@ -93,12 +90,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 * (world.gravity.force.length() * world.bodies[b1].state.position.z)
                 + world.bodies[b1].kinetic_energy();
 
-            log.constraint_error = world.constraints[0].joint.calculate_joint_error(
-                &world.bodies[0].state,
-                &world.bodies[1].state,
-                world.constraints[0].anchor_a,
-                world.constraints[0].anchor_b,
-            );
+            // log.constraint_error = world.constraints[0].joint.calculate_joint_error(
+            //     &world.bodies[0].state,
+            //     &world.bodies[1].state,
+            //     world.constraints[0].anchor_a,
+            //     world.constraints[0].anchor_b,
+            // );
             wtr.serialize(log)?;
         }
 

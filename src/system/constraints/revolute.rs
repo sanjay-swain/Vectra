@@ -167,9 +167,51 @@ impl Joint for RevoluteJoint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-    ) -> f64 {
-        ((state_b.position + state_b.orientation * anchor_b)
-            - (state_a.position + state_a.orientation * anchor_a))
-            .length()
+    ) -> [f64; 6] {
+        let e = state_b.position + state_b.orientation * anchor_b
+            - (state_a.position + state_a.orientation * anchor_a);
+
+        [
+            e.x,
+            e.y,
+            e.z,
+            (state_a.orientation * (self.joint_frame_a * DVec3::X))
+                .dot(state_b.orientation * (self.joint_frame_b * DVec3::Z)),
+            (state_a.orientation * (self.joint_frame_a * DVec3::Y))
+                .dot(state_b.orientation * (self.joint_frame_b * DVec3::Z)),
+            0.0,
+        ]
+    }
+
+    fn calculate_joint_velocity_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> [f64; 6] {
+        let w_a = state_a.orientation * state_a.angular_velocity;
+        let w_b = state_b.orientation * state_b.angular_velocity;
+
+        let e = state_b.velocity + w_b.cross(state_b.orientation * anchor_b)
+            - (state_a.velocity + w_a.cross(state_a.orientation * anchor_a));
+
+        let x_a = state_a.orientation * (self.joint_frame_a * DVec3::X);
+        let y_a = state_a.orientation * (self.joint_frame_a * DVec3::Y);
+
+        let z_b = state_b.orientation * (self.joint_frame_b * DVec3::Z);
+
+        let x_a_dot = w_a.cross(x_a);
+        let z_b_dot = w_b.cross(z_b);
+        let y_a_dot = w_a.cross(y_a);
+
+        [
+            e.x,
+            e.y,
+            e.z,
+            (x_a_dot.dot(z_b) + x_a.dot(z_b_dot)),
+            (y_a_dot.dot(z_b) + y_a.dot(z_b_dot)),
+            0.0,
+        ]
     }
 }

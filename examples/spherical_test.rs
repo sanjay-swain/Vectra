@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Starting");
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
-    let mut world = match World::new(NewtonEuler {}, constraint_solver, integration, 1e-5) {
+    let mut world = match World::new(NewtonEuler {}, constraint_solver, integration, 1e-3) {
         Ok(it) => it,
         Err(_err) => panic!(),
     };

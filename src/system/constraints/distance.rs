@@ -85,10 +85,42 @@ impl Joint for DistanceJoint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-    ) -> f64 {
-        return self.length
-            - (state_a.position + state_a.orientation * anchor_a - state_b.position
+    ) -> [f64; 6] {
+        [
+            self.length
+                - (state_a.position + state_a.orientation * anchor_a - state_b.position
+                    + state_b.orientation * anchor_b)
+                    .length(),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    }
+
+    fn calculate_joint_velocity_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> [f64; 6] {
+        let w_a = state_a.orientation * state_a.angular_velocity;
+        let w_b = state_b.orientation * state_b.angular_velocity;
+        [
+            -(state_a.position + state_a.orientation * anchor_a - state_b.position
                 + state_b.orientation * anchor_b)
-                .length();
+                .dot(
+                    state_b.velocity
+                        + w_b.cross(state_b.orientation * anchor_b)
+                        + (state_a.velocity + w_a.cross(state_a.orientation * anchor_a)),
+                ),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
     }
 }

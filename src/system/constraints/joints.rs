@@ -56,7 +56,15 @@ pub trait Joint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-    ) -> f64;
+    ) -> [f64; 6];
+
+    fn calculate_joint_velocity_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> [f64; 6];
 }
 
 #[enum_dispatch(Joint)]

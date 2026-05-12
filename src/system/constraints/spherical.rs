@@ -99,10 +99,27 @@ impl Joint for SphericalJoint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-    ) -> f64 {
-        ((state_b.position + state_b.orientation * anchor_b)
-            - (state_a.position + state_a.orientation * anchor_a))
-            .length()
+    ) -> [f64; 6] {
+        let e = state_b.position + state_b.orientation * anchor_b
+            - (state_a.position + state_a.orientation * anchor_a);
+
+        [e.x, e.y, e.z, 0.0, 0.0, 0.0]
+    }
+
+    fn calculate_joint_velocity_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> [f64; 6] {
+        let w_a = state_a.orientation * state_a.angular_velocity;
+        let w_b = state_b.orientation * state_b.angular_velocity;
+
+        let e = state_b.velocity + w_b.cross(state_b.orientation * anchor_b)
+            - (state_a.velocity + w_a.cross(state_a.orientation * anchor_a));
+
+        [e.x, e.y, e.z, 0.0, 0.0, 0.0]
     }
 }
 
