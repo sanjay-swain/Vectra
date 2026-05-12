@@ -6,10 +6,7 @@ use kite_core::{
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     system::{
-        constraints::{
-            joints::{Joint, JointType},
-            spherical::SphericalJoint,
-        },
+        constraints::{joints::JointType, spherical::SphericalJoint},
         state::State,
         world::World,
     },
