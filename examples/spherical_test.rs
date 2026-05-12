@@ -6,7 +6,6 @@ use kite_core::{
         newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
-    plots::PhysicsLog,
     system::{
         constraints::{joints::JointType, spherical::SphericalJoint},
         interactions::Force,
@@ -15,13 +14,7 @@ use kite_core::{
     },
 };
 
-use std::error::Error;
-use std::fs::File;
-
-fn main() -> Result<(), Box<dyn Error>> {
-    let file = File::create("simulation_log_3.csv")?;
-    let mut wtr = csv::Writer::from_writer(file);
-
+fn main() {
     println!("Starting");
     let constraint_solver = AccelerationConstraint {};
     let integration = SemiImplicitEuler {};
@@ -93,12 +86,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        let mut log = PhysicsLog::ZERO;
-
-        log.update(&world.bodies[b1], &world.constraints[0], t);
-
-        wtr.serialize(log)?;
-
         t += world.step_size;
 
         world.clear_forces_and_torques();
@@ -107,6 +94,4 @@ fn main() -> Result<(), Box<dyn Error>> {
         "{} {}",
         world.bodies[0].state.position, world.bodies[1].state.position
     );
-    wtr.flush()?;
-    Ok(())
 }

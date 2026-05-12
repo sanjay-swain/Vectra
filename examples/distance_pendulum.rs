@@ -6,7 +6,6 @@ use kite_core::{
         newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
-    plots::PhysicsLog,
     system::{
         constraints::{distance::DistanceJoint, joints::JointType},
         state::State,
@@ -14,13 +13,7 @@ use kite_core::{
     },
 };
 
-use std::error::Error;
-use std::fs::File;
-
-fn main() -> Result<(), Box<dyn Error>> {
-    let file = File::create("pendulum.csv")?;
-    let mut wtr = csv::Writer::from_writer(file);
-
+fn main() {
     println!("Starting");
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
@@ -64,10 +57,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut t: f64 = 0.0;
 
-    let mut step: u64 = 0;
-
-    let log_enable = true;
-
     while t < 10.0 {
         world.apply_gravity_force();
 
@@ -81,31 +70,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        if log_enable && (step % 10 == 0) {
-            let mut log = PhysicsLog::ZERO;
-
-            log.update(&world.bodies[1], &world.constraints[0], t);
-
-            log.energy = world.bodies[b1].mass
-                * (world.gravity.force.length() * world.bodies[b1].state.position.z)
-                + world.bodies[b1].kinetic_energy();
-
-            // log.constraint_error = world.constraints[0].joint.calculate_joint_error(
-            //     &world.bodies[0].state,
-            //     &world.bodies[1].state,
-            //     world.constraints[0].anchor_a,
-            //     world.constraints[0].anchor_b,
-            // );
-
-            wtr.serialize(log)?;
-        }
-
         t += world.step_size;
 
         world.clear_forces_and_torques();
-        step += 1;
     }
     println!("{}", world.bodies[1].state.position);
-    wtr.flush()?;
-    Ok(())
 }

@@ -1,21 +1,13 @@
-use std::{error::Error, fs::File};
-
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::{
     dynamics::{
         constraint_solver::AccelerationConstraint, forces::ForceSolver, newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
-    plots::PhysicsLog,
     system::{state::State, world::World},
 };
 
-fn main() -> Result<(), Box<dyn Error>> {
-    // Create a file if it doesn't already exists
-    // If already exists then overwrite from start
-    let file = File::create("dzhanibekov_simulation.csv")?;
-    let mut wtr = csv::Writer::from_writer(file);
-
+fn main() {
     println!("Starting");
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
@@ -48,17 +40,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Update the state_derivative of each body
         world.force_solver.solve(&mut world.bodies);
 
-        let mut log = PhysicsLog::ZERO;
-        // Update the log
-        log.update_body(&world.bodies[0], t);
-
-        log.energy = (world.bodies[0].inertia * world.bodies[0].state.angular_velocity).length();
-
         // increase the time
         world.integrator.step(&mut world.bodies, world.step_size);
-
-        // Write to the log
-        wtr.serialize(log)?;
 
         t += world.step_size;
 
@@ -70,7 +53,4 @@ fn main() -> Result<(), Box<dyn Error>> {
         "{}",
         (world.bodies[0].inertia * world.bodies[0].state.angular_velocity).length()
     );
-
-    wtr.flush()?;
-    Ok(())
 }
